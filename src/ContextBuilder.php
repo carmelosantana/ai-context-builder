@@ -100,11 +100,10 @@ class ContextBuilder
      * Recursively scan directories for files by type.
      *
      * @param array $dirs Directories to scan.
-     * @param array $additionalFiles Additional files to include.
      * @param array $extensions File extensions to filter by (e.g., ['php']). If empty, include all files.
      * @return array List of file paths.
      */
-    private static function getFilesByType(array $dirs, array $extensions): array
+    private static function getFilesByType(array $dirs, array $extensions = []): array
     {
         $files = [];
 
@@ -127,7 +126,7 @@ class ContextBuilder
                 }
 
                 if (is_dir($path)) {
-                    $files = array_merge($files, self::getFilesByType([$path], [], $extensions));
+                    $files = array_merge($files, self::getFilesByType([$path], $extensions));
                 } elseif (is_file($path) and (empty($extensions) or in_array(pathinfo($path, PATHINFO_EXTENSION), $extensions, true))) {
                     $files[] = $path;
                 }
