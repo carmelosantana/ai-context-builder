@@ -16,6 +16,7 @@ class ContextBuilder
 {
     /**
      * Generate context files by scanning project directories and processing vendor files.
+     * It organizes files into specific categories (e.g., PHP, CSS, JS) and excludes hidden files.
      *
      * @param Event|array $args Composer script event, used to pass in arguments.
      */
@@ -167,7 +168,7 @@ class ContextBuilder
     }
 
     /**
-     * Process vendor files from the composer dependencies.
+     * Process vendor files from the composer dependencies and store only PHP files.
      *
      * @param string $vendor Vendor name.
      * @param string $package Package name.
@@ -190,7 +191,8 @@ class ContextBuilder
             return '';
         }
 
-        $vendorFiles = self::getFilesByType([$vendorDir], [], ['php']);
+        // Process only PHP files
+        $vendorFiles = self::getFilesByType([$vendorDir], ['php']);
         self::writeFilesToOutput($vendorFiles, $outputFileVendor);
 
         return $outputFileVendor;
@@ -219,7 +221,7 @@ class ContextBuilder
         // Display details of each file generated
         echo "Files created:\n";
         foreach (array_merge($outputFiles, $composerFiles) as $outputFile) {
-            if ($outputFile && file_exists($outputFile)) {
+            if ($outputFile and file_exists($outputFile)) {
                 $fileSize = self::humanReadableFileSize(filesize($outputFile));
                 echo "- " . basename($outputFile) . " (" . $fileSize . ")\n";
             }
