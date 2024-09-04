@@ -115,7 +115,7 @@ class ContextBuilder
             }
 
             foreach ($items as $item) {
-                if ($item === '.' or $item === '..') {
+                if ($item[0] === '.') {
                     continue;
                 }
 
