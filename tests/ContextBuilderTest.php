@@ -4,13 +4,26 @@ declare(strict_types=1);
 
 use CarmeloSantana\AiContextBuilder\ContextBuilder;
 
+# https://www.php.net/manual/en/function.rmdir.php#110489
+function delTree($dir)
+{
+    $files = array_diff(scandir($dir), ['.', '..']);
+
+    foreach ($files as $file) {
+        $file = $dir . '/' . $file;
+        (is_dir($file)) ? delTree($file) : unlink($file);
+    }
+
+    return rmdir($dir);
+}
+
 beforeEach(function () {
     $packageDir = __DIR__ . '/package';
     if (!is_dir($packageDir)) {
         mkdir($packageDir);
     }
 
-    // go to working dir
+    // Go to working dir
     chdir($packageDir);
 
     // Setup: create a mock .ai directory and test files
@@ -25,40 +38,42 @@ beforeEach(function () {
         mkdir($this->srcDir);
     }
 
+    // Add various test files
     file_put_contents($this->srcDir . '/Test.php', '<?php echo "Hello, World!";');
     file_put_contents($this->srcDir . '/style.css', 'body { background-color: #fff; }');
     file_put_contents($this->srcDir . '/script.js', 'console.log("Hello, World!");');
-    file_put_contents(__DIR__ . '/package/composer.json', '{}');
+    file_put_contents($packageDir . '/composer.json', '{}');
 
     // Create a file that includes ContextBuilder.php as an additional path
     $this->additionalPathsFile = $packageDir . '/additional-paths.txt';
     file_put_contents($this->additionalPathsFile, dirname(__DIR__) . '/src/ContextBuilder.php');
+
+    // Hidden or unwanted files (e.g., .DS_Store)
+    file_put_contents($this->srcDir . '/.DS_Store', 'This is a hidden system file');
+    file_put_contents($this->srcDir . '/random.txt', 'This is a random text file.');
 });
 
-// Add a config flag to enable/disable deleting files after each test
-$deleteFilesAfterTest = false;
+$delete = true;
 
-afterEach(function () use ($deleteFilesAfterTest) {
-    if ($deleteFilesAfterTest) {
-        // Cleanup: remove the .ai directory and test files
-        array_map('unlink', glob($this->srcDir . '/*.*'));
-        rmdir($this->srcDir);
-
-        array_map('unlink', glob($this->aiDir . '/*.*'));
-        rmdir($this->aiDir);
-
-        unlink(__DIR__ . '/package/composer.json');
-        unlink($this->additionalPathsFile);
+afterEach(function () use ($delete) {
+    if (!$delete) {
+        return;
     }
+
+    // Cleanup: remove the .ai directory
+    delTree($this->aiDir);
+
+    // Remove the package directory and its contents
+    delTree(__DIR__ . '/package');
 });
 
 it('generates all context files', function () {
     ContextBuilder::generateContext(['additional-paths.txt']);
 
-    expect(file_exists($this->aiDir . '/files-all.txt'))->toBeTrue();
-    expect(file_exists($this->aiDir . '/files-php.txt'))->toBeTrue();
-    expect(file_exists($this->aiDir . '/files-css.txt'))->toBeTrue();
-    expect(file_exists($this->aiDir . '/files-js.txt'))->toBeTrue();
+    expect($this->aiDir . '/files-all.txt')->toBeFile();
+    expect($this->aiDir . '/files-php.txt')->toBeFile();
+    expect($this->aiDir . '/files-css.txt')->toBeFile();
+    expect($this->aiDir . '/files-js.txt')->toBeFile();
 });
 
 it('includes content in generated files', function () {
@@ -73,4 +88,32 @@ it('includes content in generated files', function () {
     expect($phpFilesContent)->toContain('<?php echo "Hello, World!";');
     expect($cssFilesContent)->toContain('body { background-color: #fff; }');
     expect($jsFilesContent)->toContain('console.log("Hello, World!");');
+});
+
+it('excludes hidden and unsupported files', function () {
+    ContextBuilder::generateContext(['additional-paths.txt']);
+
+    $allFilesContent = file_get_contents($this->aiDir . '/files-all.txt');
+
+    // Ensure .DS_Store is not included
+    expect($allFilesContent)->not->toContain('.DS_Store');
+    expect($allFilesContent)->not->toContain('random.txt');  // Unsupported file
+});
+
+it('handles empty directories gracefully', function () {
+    // Clear src directory and run the generator
+    array_map('unlink', glob($this->srcDir . '/*.*'));
+
+    ContextBuilder::generateContext();
+
+    // Check if files are generated, but should be empty
+    $allFilesContent = file_get_contents($this->aiDir . '/files-all.txt');
+
+    // will contain only the composer.json file
+    expect($allFilesContent)->toContain('composer.json');
+
+    // Check that the PHP, CSS, and JS files are not generated or are empty
+    expect($this->aiDir . '/files-php.txt')->not->toBeFile();
+    expect($this->aiDir . '/files-css.txt')->not->toBeFile();
+    expect($this->aiDir . '/files-js.txt')->not->toBeFile();
 });
