@@ -1,0 +1,44 @@
+{
+    "name": "carmelosantana/ai-context-builder",
+    "version": "1.0.0",
+    "description": "A composer package to build context files for AI chatbots.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Carmelo Santana",
+            "email": "me@carmelosantana.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1"
+    },
+    "require-dev": {
+        "pestphp/pest": "^2.35",
+        "mockery/mockery": "^1.6",
+        "carmelosantana/sudopress": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "CarmeloSantana\\AiContextBuilder\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "pest tests/"
+    },
+    "extra": {
+        "installer-paths": {
+            "src/": ["type:library"]
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}

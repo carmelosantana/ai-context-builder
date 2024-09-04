@@ -1,0 +1,6 @@
+.ai/
+tests/package/
+vendor/
+composer.lock
+composer.phar
+.DS_Store
