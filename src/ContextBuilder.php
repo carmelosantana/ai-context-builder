@@ -20,7 +20,7 @@ class ContextBuilder
      *
      * @param Event|array $args Composer script event, used to pass in arguments.
      */
-    public static function generateContext(Event|array $args): void
+    public static function generateContext(Event|array $args = []): void
     {
         if ($args instanceof Event) {
             $args = $args->getArguments();
@@ -50,7 +50,7 @@ class ContextBuilder
         ];
 
         // Include additional files or directories provided by the user
-        if (!empty($args[0])) {
+        if (!empty($args) and isset($args[0])) {
             $additionalPathsFile = $args[0];
 
             // Check local working directory for the additional paths file
