@@ -1,6 +1,6 @@
 {
     "name": "carmelosantana/ai-context-builder",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "description": "A composer package to build context files for AI chatbots.",
     "type": "library",
     "license": "MIT",

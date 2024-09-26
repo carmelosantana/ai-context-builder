@@ -59,6 +59,9 @@ class ContextBuilder
             $dir . '/composer.json',
         ];
 
+        // Flag for whether to limit to paths from a file
+        $limitToIncludeFile = false;
+
         // Include additional files or directories provided by the user
         if (!empty($args) and isset($args[0])) {
             $additionalPathsFile = $args[0];
@@ -75,12 +78,27 @@ class ContextBuilder
 
             if (file_exists($additionalPathsFile)) {
                 $additionalPaths = file($additionalPathsFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-                $additionalFiles = array_merge($additionalFiles, $additionalPaths);
+                $additionalFiles = $additionalPaths;
+                $limitToIncludeFile = true;
+
+                // Override output file name to match the include file basename
+                $basename = basename($additionalPathsFile, '.txt');
+                $allFilesOutput = $aiDir . "/files-{$basename}.txt";
+                $phpOutput = $aiDir . "/files-php-{$basename}.txt";
+                $cssOutput = $aiDir . "/files-css-{$basename}.txt";
+                $jsOutput = $aiDir . "/files-js-{$basename}.txt";
             }
         }
 
+        // If limiting to include file, only use paths from that file
+        if ($limitToIncludeFile) {
+            $paths = $additionalFiles;
+        } else {
+            $paths = array_merge($dirs, $additionalFiles);
+        }
+
         // Scan and categorize files by type
-        $paths = array_merge($dirs, $additionalFiles);
+        $allFiles = self::getFilesByType($paths, ['php', 'css', 'js', 'json', 'yml', 'xml', 'md'], $ignoreList);
         $phpFiles = self::getFilesByType($paths, ['php'], $ignoreList);
         $cssFiles = self::getFilesByType($paths, ['css', 'scss', 'sass', 'less'], $ignoreList);
         $jsFiles = self::getFilesByType($paths, ['js', 'ts'], $ignoreList);
