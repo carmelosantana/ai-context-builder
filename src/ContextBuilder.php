@@ -39,6 +39,16 @@ class ContextBuilder
             $dir . '/src',
         ];
 
+        // Define directories or files to ignore
+        $ignoreList = [
+            'node_modules',
+            '.git',
+            'vendor',
+            'tests',
+            'build',
+            'package-lock.json',
+        ];
+
         $allFilesOutput = $aiDir . '/files-all.txt';
         $phpOutput = $aiDir . '/files-php.txt';
         $cssOutput = $aiDir . '/files-css.txt';
@@ -71,10 +81,9 @@ class ContextBuilder
 
         // Scan and categorize files by type
         $paths = array_merge($dirs, $additionalFiles);
-        $allFiles = self::getFilesByType($paths, ['php', 'css', 'js', 'json', 'yml', 'xml', 'md']);
-        $phpFiles = self::getFilesByType($paths, ['php']);
-        $cssFiles = self::getFilesByType($paths, ['css', 'scss', 'sass', 'less']);
-        $jsFiles = self::getFilesByType($paths, ['js', 'ts']);
+        $phpFiles = self::getFilesByType($paths, ['php'], $ignoreList);
+        $cssFiles = self::getFilesByType($paths, ['css', 'scss', 'sass', 'less'], $ignoreList);
+        $jsFiles = self::getFilesByType($paths, ['js', 'ts'], $ignoreList);
 
         // Write categorized files to the corresponding output files
         self::writeFilesToOutput($allFiles, $allFilesOutput);
@@ -101,13 +110,18 @@ class ContextBuilder
      *
      * @param array $dirs Directories to scan.
      * @param array $extensions File extensions to filter by (e.g., ['php']). If empty, include all files.
+     * @param array $ignoreList List of directories or files to ignore.
      * @return array List of file paths.
      */
-    private static function getFilesByType(array $dirs, array $extensions = []): array
+    private static function getFilesByType(array $dirs, array $extensions = [], array $ignoreList = []): array
     {
         $files = [];
 
         foreach ($dirs as $dir) {
+            if (in_array(basename($dir), $ignoreList, true)) {
+                continue;
+            }
+
             if (is_dir($dir)) {
                 $items = scandir($dir);
             } else {
@@ -125,8 +139,12 @@ class ContextBuilder
                     $path = $item;
                 }
 
+                if (in_array(basename($path), $ignoreList, true)) {
+                    continue;
+                }
+
                 if (is_dir($path)) {
-                    $files = array_merge($files, self::getFilesByType([$path], $extensions));
+                    $files = array_merge($files, self::getFilesByType([$path], $extensions, $ignoreList));
                 } elseif (is_file($path) and (empty($extensions) or in_array(pathinfo($path, PATHINFO_EXTENSION), $extensions, true))) {
                     $files[] = $path;
                 }
