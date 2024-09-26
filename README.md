@@ -8,7 +8,6 @@ A Composer package to simplify building context from your source code.
   - [Configuration](#configuration)
   - [Output](#output)
 - [Funding](#funding)
-- [Changelog](#changelog)
 - [License](#license)
 
 ---
@@ -94,11 +93,6 @@ If you find this project useful or use it in a commercial environment, please co
 - Ethereum ➭ `0x9f5D6dd018758891668BF2AC547D38515140460f`
 - Patreon ➭ Subscribe via [patreon.com/carmelosantana](https://www.patreon.com/carmelosantana)
 - PayPal ➭ [Donate via PayPal](https://www.paypal.com/donate/?business=PWVK9L8VGN4VA&no_recurring=0&item_name=Thank+you+for+supporting+the+AI+Context+Builder!&currency_code=USD)
-
-## Changelog
-
-- **1.0.0** - Sep 03, 2024
-  - Initial release.
 
 ## License
 
