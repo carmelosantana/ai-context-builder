@@ -98,10 +98,10 @@ class ContextBuilder
         }
 
         // Scan and categorize files by type
-        $allFiles = self::getFilesByType($paths, ['php', 'css', 'js', 'json', 'yml', 'xml', 'md'], $ignoreList);
+        $allFiles = self::getFilesByType($paths, ['php', 'css', 'js', 'json', 'yml', 'xml', 'md', 'mjs', 'ts', 'scss', 'sass', 'less', 'jsx', 'tsx'], $ignoreList);
         $phpFiles = self::getFilesByType($paths, ['php'], $ignoreList);
         $cssFiles = self::getFilesByType($paths, ['css', 'scss', 'sass', 'less'], $ignoreList);
-        $jsFiles = self::getFilesByType($paths, ['js', 'ts'], $ignoreList);
+        $jsFiles = self::getFilesByType($paths, ['js', 'ts', 'mjs', 'jsx', 'tsx'], $ignoreList);
 
         // Write categorized files to the corresponding output files
         self::writeFilesToOutput($allFiles, $allFilesOutput);

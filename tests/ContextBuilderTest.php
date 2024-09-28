@@ -44,10 +44,6 @@ beforeEach(function () {
     file_put_contents($this->srcDir . '/script.js', 'console.log("Hello, World!");');
     file_put_contents($packageDir . '/composer.json', '{}');
 
-    // Create a file that includes ContextBuilder.php as an additional path
-    $this->additionalPathsFile = $packageDir . '/additional-paths.txt';
-    file_put_contents($this->additionalPathsFile, dirname(__DIR__) . '/src/ContextBuilder.php');
-
     // Hidden or unwanted files (e.g., .DS_Store)
     file_put_contents($this->srcDir . '/.DS_Store', 'This is a hidden system file');
     file_put_contents($this->srcDir . '/random.txt', 'This is a random text file.');
@@ -68,8 +64,10 @@ afterEach(function () use ($delete) {
 });
 
 it('generates all context files', function () {
-    ContextBuilder::generateContext(['additional-paths.txt']);
+    // Generate the context files
+    ContextBuilder::generateContext([]);
 
+    // Ensure the expected context files are generated
     expect($this->aiDir . '/files-all.txt')->toBeFile();
     expect($this->aiDir . '/files-php.txt')->toBeFile();
     expect($this->aiDir . '/files-css.txt')->toBeFile();
@@ -77,8 +75,10 @@ it('generates all context files', function () {
 });
 
 it('includes content in generated files', function () {
-    ContextBuilder::generateContext(['additional-paths.txt']);
+    // Generate the context files
+    ContextBuilder::generateContext([]);
 
+    // Verify the content of the generated files
     $allFilesContent = file_get_contents($this->aiDir . '/files-all.txt');
     $phpFilesContent = file_get_contents($this->aiDir . '/files-php.txt');
     $cssFilesContent = file_get_contents($this->aiDir . '/files-css.txt');
@@ -91,28 +91,27 @@ it('includes content in generated files', function () {
 });
 
 it('excludes hidden and unsupported files', function () {
-    ContextBuilder::generateContext(['additional-paths.txt']);
+    // Generate the context files
+    ContextBuilder::generateContext([]);
 
+    // Verify that hidden files and unsupported files are not included
     $allFilesContent = file_get_contents($this->aiDir . '/files-all.txt');
 
-    // Ensure .DS_Store is not included
-    expect($allFilesContent)->not->toContain('.DS_Store');
-    expect($allFilesContent)->not->toContain('random.txt');  // Unsupported file
+    expect($allFilesContent)->not->toContain('.DS_Store');  // Hidden file should not be present
+    expect($allFilesContent)->not->toContain('random.txt'); // Unsupported file should not be present
 });
 
 it('handles empty directories gracefully', function () {
-    // Clear src directory and run the generator
+    // Clear the src directory and run the generator
     array_map('unlink', glob($this->srcDir . '/*.*'));
 
-    ContextBuilder::generateContext();
+    ContextBuilder::generateContext([]);
 
-    // Check if files are generated, but should be empty
+    // Check that files are generated, but should only include composer.json as src is empty
     $allFilesContent = file_get_contents($this->aiDir . '/files-all.txt');
-
-    // will contain only the composer.json file
     expect($allFilesContent)->toContain('composer.json');
 
-    // Check that the PHP, CSS, and JS files are not generated or are empty
+    // Ensure PHP, CSS, and JS files are not generated as src directory is empty
     expect($this->aiDir . '/files-php.txt')->not->toBeFile();
     expect($this->aiDir . '/files-css.txt')->not->toBeFile();
     expect($this->aiDir . '/files-js.txt')->not->toBeFile();
